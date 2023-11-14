@@ -2,6 +2,17 @@
 #include <stdlib.h>
 #include "bst.h"
 
+Tree_Node* new_Node(char data){
+
+    Tree_Node *temp = (Tree_Node*)malloc(sizeof(Tree_Node));
+    temp->data = data;
+    temp->left = NULL;
+    temp->right = NULL;
+
+    return temp;
+
+}
+
 void tree_insert(Tree_Node** root, char data){
     
     Tree_Node* cur = *root;
@@ -14,7 +25,7 @@ void tree_insert(Tree_Node** root, char data){
                 temp->left = NULL;
                 temp->right = NULL;
 
-                temp->left = temp;
+                cur->left = temp;
                 return;
             }
             cur = cur->left;
@@ -25,39 +36,13 @@ void tree_insert(Tree_Node** root, char data){
                 temp->left = NULL;
                 temp->right = NULL;
 
-                temp->left = temp;
+                cur->right = temp;
                 return;
             }
             cur = cur->right;
         }
     }
 
-/*
-    if(data <= cur->data){
-        if(cur->left=NULL){
-            Tree_Node *temp = (Tree_Node*)malloc(sizeof(Tree_Node));
-            temp->data = data;
-            temp->left = NULL;
-            temp->right = NULL;
-
-            temp->left = temp;
-            return;
-        }else{
-            tree_insert(cur->left, data);
-        }
-
-        if(cur->right=NULL){
-            Tree_Node *temp = (Tree_Node*)malloc(sizeof(Tree_Node));
-            temp->data = data;
-            temp->left = NULL;
-            temp->right = NULL;
-
-            temp->right = temp;
-            return;
-        }else{
-            tree_insert(cur->right, data);
-        }
-    } */
 }
 
 Tree_Node* create_bst (char data[]){
@@ -66,16 +51,11 @@ Tree_Node* create_bst (char data[]){
     root->left = NULL;
     root->right = NULL;
 
-    Tree_Node **temp = &root;
-
-    int i = 0;
+    int i = 1;
     while(data[i] != '\0'){
-        tree_insert(temp, data[i]);
-        printf("insert %i ", i);
+        tree_insert(&root, data[i]);
         i++;
     }
-
-    printf("done\n");
 
     return root;
 
@@ -83,15 +63,22 @@ Tree_Node* create_bst (char data[]){
 
 Tree_Node* tree_search(Tree_Node* root, char data){
     
-    if(root->data == data){
+    if(root == NULL){
+        return NULL;
+    }
+
+    if(data == root->data){
         return root;
-    }else if(data > root->data){
-        tree_search(root->right, data);
-    }else if(data < root->data){
-        tree_search(root->left, data);
+    }
+    
+    if(data <= root->data){
+        return tree_search(root->left, data);
+    }else{
+        return tree_search(root->right, data);
     }
 
     return NULL;
+    
 }
 
 void tree_print_sorted(Tree_Node* root){
