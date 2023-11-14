@@ -1,4 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "bstdb.h"
+
+const int MID_POINT = 50000;
+int CHECK = 1;
+int numbers_used[100000];
+
 
 // Write your submission in this file
 //
@@ -35,6 +43,107 @@
 // need more functionality than what is provided by these 6 functions, you
 // may write additional functions in this file.
 
+typedef struct Tree_Node{
+	int ID;
+	int word_count;
+	char *name;
+    struct Tree_Node *left, *right;
+} Tree_Node;
+
+Tree_Node *ROOT;
+
+int generateID(){
+
+	int i = (rand() % 100001); 
+
+	while(numbers_used[i] == 1){
+		i = (rand() % 100001);
+	}
+
+	numbers_used[i] = 1;
+
+	return i;
+}
+
+void tree_delete(Tree_Node* root){
+    if(root == NULL ){
+        return;
+    }
+
+    tree_delete(root->left);
+    tree_delete(root->right);
+
+    free(root);
+
+}
+
+Tree_Node* new_Node(char *name, int wordCount ){
+
+	size_t len_name;
+
+    Tree_Node *temp = (Tree_Node*)malloc(sizeof(Tree_Node));
+	if(temp){
+		temp->word_count = wordCount;
+    	temp->left = NULL;
+    	temp->right = NULL;
+
+		len_name = strlen(name)+1;
+		temp->name = calloc(len_name, sizeof(char));
+		if(temp->name){
+			strcpy(temp->name, name);
+		}else{
+			free(temp);
+			temp = NULL;
+		}
+
+	}
+	
+    return temp;
+
+}
+
+
+void tree_insert(Tree_Node** root, Tree_Node* current){
+
+	Tree_Node* temp = *root;
+
+    while(1){
+        if(current->ID <= temp->ID){
+            if(temp->left == NULL){
+                temp->left = current;
+                return;
+            }
+            temp = temp->left;
+        }else{
+            if(temp->right == NULL){
+                temp->right = current;
+                return;
+            }
+            temp = temp->right;
+        }
+    }
+
+}
+
+Tree_Node* tree_search(Tree_Node* root, int ID){
+    
+    if(root == NULL){
+        return NULL;
+    }
+
+    if(ID == root->ID){
+        return root;
+    }
+    
+    if(ID <= root->ID){
+        return tree_search(root->left, ID);
+    }else{
+        return tree_search(root->right, ID);
+    }
+
+    return NULL;
+}
+
 
 int
 bstdb_init ( void ) {
@@ -47,6 +156,7 @@ bstdb_init ( void ) {
 
 int
 bstdb_add ( char *name, int word_count, char *author ) {
+	
 	// This function should create a new node in the binary search tree, 
 	// populate it with the name, word_count and author of the arguments and store
 	// the result in the tree.
@@ -61,7 +171,36 @@ bstdb_add ( char *name, int word_count, char *author ) {
 	//
 	// If something goes wrong and the data cannot be stored, this function
 	// should return -1. Otherwise it should return the ID of the new node
-	return -1;
+
+	int i;
+
+	if(CHECK == 1){
+		struct Tree_Node *temp;
+
+		temp = new_Node(name, word_count);
+		if(!temp){
+			return -1;
+		}
+
+		temp->ID = MID_POINT;
+		numbers_used[MID_POINT] = 1;
+		CHECK = 0;
+		ROOT = temp;
+		return MID_POINT;
+	}else{
+		struct Tree_Node *temp;
+
+		temp = new_Node(name, word_count);
+		if(!temp){
+			return -1;
+		}
+
+		i = generateID();
+		temp->ID = i;
+		tree_insert(&ROOT, temp);
+	}
+
+	return i;
 }
 
 int
@@ -70,7 +209,13 @@ bstdb_get_word_count ( int doc_id ) {
 	// and return the word_count of the node with the corresponding doc_id.
 	//
 	// If the required node is not found, this function should return -1
-	return -1;
+
+	Tree_Node *temp = tree_search(ROOT, doc_id);
+	if(temp == NULL){
+		return -1;
+	}else{
+		return temp->word_count;
+	}
 }
 
 char*
@@ -79,6 +224,12 @@ bstdb_get_name ( int doc_id ) {
 	// and return the name of the node with the corresponding doc_id.
 	//
 	// If the required node is not found, this function should return NULL or 0
+	Tree_Node *temp = tree_search(ROOT, doc_id);
+	if(temp == NULL){
+		return 0;
+	}else{
+		return temp->name;
+	}
 	return 0;
 }
 
@@ -102,6 +253,9 @@ bstdb_stat ( void ) {
 	//
 	//  + Can you prove that there are no accidental duplicate document IDs
 	//    in the tree?
+
+
+
 }
 
 void
@@ -109,4 +263,7 @@ bstdb_quit ( void ) {
 	// This function will run once (and only once) when the program ends. Use
 	// it to free any memory you allocated in the course of operating the
 	// database.
+	tree_delete(ROOT);
 }
+
+//gcc -Wall -g src/task2.c src/bstdb.c src/db/profiler.c src/db/database.c src/db/listdb.c -o task2 -lm
