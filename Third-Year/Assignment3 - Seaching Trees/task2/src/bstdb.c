@@ -3,10 +3,12 @@
 #include <string.h>
 #include "bstdb.h"
 
-const int MID_POINT = 50000;
+const float MAX_SIZE = 131072;
+float numerator = 1;
+float denominator = 2;
 int CHECK = 1;
-int numbers_used[100000];
-
+int num_insertions;
+int tot_num_nodes;
 
 // Write your submission in this file
 //
@@ -54,15 +56,16 @@ Tree_Node *ROOT;
 
 int generateID(){
 
-	int i = (rand() % 100001); 
+	int ID = (MAX_SIZE) * ((numerator)/(denominator));
 
-	while(numbers_used[i] == 1){
-		i = (rand() % 100001);
+	numerator = numerator + 2;
+
+	if(numerator > denominator){
+		denominator = denominator * 2;
+		numerator = 1;
 	}
 
-	numbers_used[i] = 1;
-
-	return i;
+	return ID;
 }
 
 void tree_delete(Tree_Node* root){
@@ -181,12 +184,12 @@ bstdb_add ( char *name, int word_count, char *author ) {
 		if(!temp){
 			return -1;
 		}
-
-		temp->ID = MID_POINT;
-		numbers_used[MID_POINT] = 1;
+		i = generateID();
+		temp->ID = i;
 		CHECK = 0;
 		ROOT = temp;
-		return MID_POINT;
+		num_insertions++;
+		return i;
 	}else{
 		struct Tree_Node *temp;
 
@@ -200,6 +203,7 @@ bstdb_add ( char *name, int word_count, char *author ) {
 		tree_insert(&ROOT, temp);
 	}
 
+	num_insertions++;
 	return i;
 }
 
@@ -233,6 +237,55 @@ bstdb_get_name ( int doc_id ) {
 	return 0;
 }
 
+//Is the tree balanced
+
+int max(int a, int b){
+	if(a >= b){
+		return a;
+	}else{
+		return b;
+	}
+}
+
+int height(Tree_Node* root){
+	if(root == NULL){
+		return 0;
+	}
+	return 1 + max(height(root->left), height(root->right));
+}
+
+int isBalanced(Tree_Node *root){
+	int LH, RH;
+
+	if(root == NULL){
+		return 1;
+	}
+
+	LH = height(root->left);
+	RH = height(root->right);
+
+	if(abs(LH - RH) <= 1 && isBalanced(root->left) && isBalanced(root->right)){
+		return 1;
+	}
+
+	return 0;
+
+}
+
+//Node counting
+
+int count_nodes(Tree_Node *root){
+	if(root == NULL){
+		return 0;
+	}
+
+	int L_node = count_nodes(root->left);
+	int R_node = count_nodes(root->right);
+
+	return 1 + L_node + R_node;
+
+}
+
 void
 bstdb_stat ( void ) {
 	// Use this function to show off! It will be called once after the 
@@ -254,7 +307,16 @@ bstdb_stat ( void ) {
 	//  + Can you prove that there are no accidental duplicate document IDs
 	//    in the tree?
 
+	if(isBalanced(ROOT) == 1){
+		printf("This tree is BALANCED!\n");
+	}else{
+		printf("This tree is NOT BALANCED!\n");
+	}
 
+	tot_num_nodes = count_nodes(ROOT);
+
+	printf("There are %i nodes inserted\n", num_insertions);
+	printf("There are %i nodes in the tree\n", tot_num_nodes);
 
 }
 
