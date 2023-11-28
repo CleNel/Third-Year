@@ -41,26 +41,21 @@ void add_edge(struct Graph* graph, int src, int dest) {
 
 // Function to perform breadth-first search on a graph
 void bfs(struct Graph* graph, int startVertex) {
-    // Create a queue for BFS
     int* queue = (int*)malloc(graph->numVertices * sizeof(int));
     int front = -1, rear = -1;
 
-    // Mark the current node as visited and enqueue it
     graph->visited[startVertex] = 1;
     queue[++rear] = startVertex;
 
     while (front != rear) {
-        // Dequeue a vertex from the queue
         int currentVertex = queue[++front];
         printf("%d ", currentVertex);
 
-        // Get all adjacent vertices of the dequeued vertex
         struct Node* temp = graph->adjList[currentVertex];
         while (temp != NULL) {
             int adjVertex = temp->vertex;
 
-            // If the adjacent vertex is not visited, mark it as visited and enqueue it
-            if (graph->visited[adjVertex] == 0) {
+            if (graph->visited[adjVertex == 0]) {
                 graph->visited[adjVertex] = 1;
                 queue[++rear] = adjVertex;
             }
