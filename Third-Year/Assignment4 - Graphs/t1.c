@@ -67,6 +67,22 @@ void bfs(struct Graph* graph, int startVertex) {
     free(queue);
 }
 
+void dfs(Graph* g, int origin){
+
+    g->visited[origin] = 1;
+    printf("%d ", origin);
+
+    struct Node* temp = g->adjList[origin];
+    while (temp != NULL) {
+        int adjVertex = temp->vertex;
+        if (g->visited[adjVertex] == 0) {
+            dfs(g, adjVertex);
+        }
+        temp = temp->next;
+    }
+
+}
+
 // Function to free the memory allocated for the graph
 void delete_graph(struct Graph* graph) {
     for (int i = 0; i < graph->numVertices; ++i) {
